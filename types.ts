@@ -18,9 +18,11 @@ export interface IRelation<P, R extends P> {
   innerJoin: <P2, R2 extends P2>(
     y: IRelation<P2, R2>
   ) => (
-    ex: ((r: R) => R[keyof R])
-  ) => (ey: ((r: R2) => R[keyof R])) => IRelation<P & P2, R & R2>;
-  project: (fields: (keyof R)[]) => IRelation<{}, { [x: string]: R[keyof R] }>;
+    ex: (r: R) => R[keyof R]
+  ) => (ey: (r: R2) => R[keyof R]) => IRelation<P & P2, R & R2>;
+  project: (
+    fields: ((r: R) => R[keyof R])[]
+  ) => IRelation<{}, { [x: string]: R[keyof R] }>;
   select: (p: ((r: R) => boolean)) => IRelation<P, R>;
   union: (y: IRelation<P, R>) => IRelation<P, R>;
 }
@@ -67,15 +69,14 @@ export const Relation = <P, R extends P>(records: R[]): IRelation<P, R> => {
     return that.join(y)(xn => yn => ex(xn) === ey(yn));
   };
 
-  (that as IRelation<P, R>).project = fields => {
-    return Relation(
+  (that as IRelation<P, R>).project = fields =>
+    Relation(
       that.records.map(r =>
         fields
-          .map(field => ({ [field]: r[field] }))
-          .reduce((x, y) => Object.assign(x, y), {})
+          .map(field => ({ [field.toString()]: field(r) }))
+          .reduce((x, y) => Object.assign({}, x, y), {})
       )
     );
-  };
 
   (that as IRelation<P, R>).select = p => Relation(that.records.filter(p));
 

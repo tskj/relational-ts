@@ -1,10 +1,16 @@
 import { Relation, IRelation } from "./types";
 
-const employeeId = <V>(obj: { employeeId: V }) => obj["employeeId"];
-const fullname = <V>(obj: { fullname: V }) => obj["fullname"];
-const birthDate = <V>(obj: { birthDate: V }) => obj["birthDate"];
-const groupId = <V>(obj: { groupId: V }) => obj["groupId"];
-const group = <V>(obj: { group: V }) => obj["group"];
+const fieldSelector = <S extends string>(field: S) => {
+  const f = <V>(obj: Record<S, V>): V => obj[field];
+  f.toString = () => field;
+  return f;
+};
+
+const employeeId = fieldSelector("employeeId");
+const fullname = fieldSelector("fullname");
+const birthDate = fieldSelector("birthDate");
+const groupId = fieldSelector("groupId");
+const group = fieldSelector("group");
 
 type EmployeeRecord = { employeeId: number; fullname: string; birthDate: Date };
 type EmployeeRelation = IRelation<{ employeeId: number }, EmployeeRecord>;
@@ -50,7 +56,6 @@ const groups: IRelation<
 const result = employees
   .innerJoin(groupRel)(employeeId)(employeeId)
   .innerJoin(groups)(groupId)(groupId)
-  .select(r => fullname(r) === "Tarjei S")
-  .project(["fullname", "birthDate", "group"]);
+  .select(r => /Tarjei/.test(fullname(r)));
 
 console.log(result.records);
