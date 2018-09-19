@@ -24,7 +24,7 @@ const employees: EmployeeRelation = Relation([
   {
     employeeId: 1,
     fullname: "Henrik L",
-    birthDate: new Date("1993")
+    birthDate: new Date("1992")
   }
 ]);
 
@@ -56,6 +56,7 @@ const groups: IRelation<
 const result = employees
   .innerJoin(groupRel)(employeeId)(employeeId)
   .innerJoin(groups)(groupId)(groupId)
-  .select(r => /Tarjei/.test(fullname(r)));
+  .select(r => /Tarjei/.test(fullname(r)))
+  .project([fullname, group, birthDate]);
 
 console.log(result.records);
