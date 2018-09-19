@@ -18,9 +18,11 @@ export interface IRelation<P, R extends P> {
   ) => IRelation<{}, { [x: string]: R[keyof R] }>;
   select: (p: ((r: R) => boolean)) => IRelation<P, R>;
   union: (y: IRelation<P, R>) => IRelation<P, R>;
+
+  map: <R2 extends P>(f: (r: R) => R2) => IRelation<P, R2>;
 }
 
-export const Relation = <P, R extends P>(records: R[]): IRelation<P, R> => {
+export const relation = <P, R extends P>(records: R[]): IRelation<P, R> => {
   const that = ((p: P) => {
     const recs = records.filter(r => {
       let eq = true;
@@ -32,7 +34,7 @@ export const Relation = <P, R extends P>(records: R[]): IRelation<P, R> => {
       return eq;
     });
     if (recs.length > 0) {
-      return recs[0];
+      return recs[recs.length - 1];
     } else {
       return undefined;
     }
@@ -44,15 +46,15 @@ export const Relation = <P, R extends P>(records: R[]): IRelation<P, R> => {
     const x = that.records();
     switch (x.length) {
       case 0:
-        return Relation([]);
+        return relation([]);
       default:
-        return Relation(
+        return relation(
           y
             .records()
             .filter(y0 => p(x[0])(y0))
             .map(y0 => Object.assign({}, x[0], y0))
             .concat(
-              Relation(x.slice(1))
+              relation(x.slice(1))
                 .join(y)(p)
                 .records()
             )
@@ -65,8 +67,10 @@ export const Relation = <P, R extends P>(records: R[]): IRelation<P, R> => {
     return that.join(y)(xn => yn => (xn[ex] as any) === yn[ey]);
   };
 
+  (that as IRelation<P, R>).map = f => relation(that.records().map(f));
+
   (that as IRelation<P, R>).project = (...fields) =>
-    Relation(
+    relation(
       that
         .records()
         .map(r =>
@@ -76,10 +80,10 @@ export const Relation = <P, R extends P>(records: R[]): IRelation<P, R> => {
         )
     );
 
-  (that as IRelation<P, R>).select = p => Relation(that.records().filter(p));
+  (that as IRelation<P, R>).select = p => relation(that.records().filter(p));
 
   (that as IRelation<P, R>).union = y =>
-    Relation(that.records().concat(y.records()));
+    relation(that.records().concat(y.records()));
 
   return that;
 };
