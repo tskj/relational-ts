@@ -1,62 +1,78 @@
-import { Relation, IRelation } from "./types";
+export interface IRelation<P, R extends P> {
+  records: R[];
+  (primaryKey: P): R | undefined;
+  join: <P2, R2 extends P2>(
+    y: IRelation<P2, R2>
+  ) => (p: (x: R) => (y: R2) => boolean) => IRelation<P & P2, R & R2>;
+  innerJoin: <
+    P2,
+    R2 extends P2,
+    V1 extends keyof R & keyof R2,
+    V2 extends keyof R & keyof R2,
+    _V extends R[V1] & R2[V2] // Attempt to force typeof R[keyof R] === typeof R2[keyof R2]
+  >(
+    y: IRelation<P2, R2>
+  ) => (ex: V1) => (ey: V2) => IRelation<P & P2, R & R2>;
+  project: (
+    ...fields: (keyof R)[]
+  ) => IRelation<{}, { [x: string]: R[keyof R] }>;
+  select: (p: ((r: R) => boolean)) => IRelation<P, R>;
+  union: (y: IRelation<P, R>) => IRelation<P, R>;
+}
 
-const fieldSelector = <S extends string>(field: S) => {
-  const f = <V>(obj: Record<S, V>): V => obj[field];
-  f.toString = () => field;
-  return f;
+export const Relation = <P, R extends P>(records: R[]): IRelation<P, R> => {
+  const that = ((p: P) => {
+    const recs = records.filter(r => {
+      let eq = true;
+      for (const key in p) {
+        if (r[key] !== p[key]) {
+          eq = false;
+        }
+      }
+      return eq;
+    });
+    if (recs.length > 0) {
+      return recs[0];
+    } else {
+      return undefined;
+    }
+  }) as IRelation<P, R>;
+
+  (that as IRelation<P, R>).records = records;
+
+  (that as IRelation<P, R>).join = y => p => {
+    const x = that.records;
+    switch (x.length) {
+      case 0:
+        return Relation([]);
+      default:
+        return Relation(
+          y.records
+            .filter(y0 => p(x[0])(y0))
+            .map(y0 => Object.assign({}, x[0], y0))
+            .concat(Relation(x.slice(1)).join(y)(p).records)
+        );
+    }
+  };
+
+  (that as IRelation<P, R>).innerJoin = y => ex => ey => {
+    // Todo: figure out how to restrain the types to match in the signature
+    return that.join(y)(xn => yn => (xn[ex] as any) === (yn[ey] as any));
+  };
+
+  (that as IRelation<P, R>).project = (...fields) =>
+    Relation(
+      that.records.map(r =>
+        fields
+          .map(field => ({ [field]: r[field] }))
+          .reduce((x, y) => Object.assign({}, x, y), {})
+      )
+    );
+
+  (that as IRelation<P, R>).select = p => Relation(that.records.filter(p));
+
+  (that as IRelation<P, R>).union = y =>
+    Relation(that.records.concat(y.records));
+
+  return that;
 };
-
-const employeeId = fieldSelector("employeeId");
-const fullname = fieldSelector("fullname");
-const birthDate = fieldSelector("birthDate");
-const groupId = fieldSelector("groupId");
-const group = fieldSelector("group");
-
-type EmployeeRecord = { employeeId: number; fullname: string; birthDate: Date };
-type EmployeeRelation = IRelation<{ employeeId: number }, EmployeeRecord>;
-
-const employees: EmployeeRelation = Relation([
-  {
-    employeeId: 0,
-    fullname: "Tarjei S",
-    birthDate: new Date("1995")
-  },
-  {
-    employeeId: 1,
-    fullname: "Henrik L",
-    birthDate: new Date("1992")
-  }
-]);
-
-const groupRel: IRelation<
-  { employeeId: number; groupId: number },
-  { employeeId: number; groupId: number }
-> = Relation([
-  { employeeId: 0, groupId: 1 },
-  { employeeId: 0, groupId: 2 },
-  { employeeId: 2, groupId: 1 },
-  { employeeId: 1, groupId: 4 }
-]);
-
-const groups: IRelation<
-  { groupId: number },
-  { groupId: number; group: string }
-> = Relation([
-  { groupId: 0, group: "Gruppe 1" },
-  { groupId: 1, group: "Gruppe 2" },
-  { groupId: 2, group: "Gruppe 3" },
-  { groupId: 3, group: "Gruppe 4" },
-  { groupId: 4, group: "Gruppe 5" }
-]);
-
-// let result = employees
-//   .join(groupRel)(x => y => employeeId(x) === employeeId(y))
-//   .join(groups)(x => y => groupId(x) === groupId(y));
-
-const result = employees
-  .innerJoin(groupRel)(employeeId)(employeeId)
-  .innerJoin(groups)(groupId)(groupId)
-  .select(r => /Tarjei/.test(fullname(r)))
-  .project([fullname, group, birthDate]);
-
-console.log(result.records);
