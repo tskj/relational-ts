@@ -37,9 +37,9 @@ const groups: IRelation<
   { groupId: 4, group: 'Gruppe 5' }
 ]);
 
-// let result = employees
-//   .join(groupRel)(x => y => employeeId(x) === employeeId(y))
-//   .join(groups)(x => y => groupId(x) === groupId(y));
+let _result = employees
+  .join(groupRel)(x => y => x.employeeId === y.employeeId)
+  .join(groups)(x => y => x.groupId === y.groupId);
 
 const result = employees
   .innerJoin(groupRel)('employeeId')('employeeId')

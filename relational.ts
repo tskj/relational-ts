@@ -7,8 +7,8 @@ export interface IRelation<P, R extends P> {
   innerJoin: <
     P2,
     R2 extends P2,
-    V1 extends keyof R & keyof R2,
-    V2 extends keyof R & keyof R2,
+    V1 extends keyof R,
+    V2 extends keyof R2,
     _V extends R[V1] & R2[V2] // Attempt to force typeof R[keyof R] === typeof R2[keyof R2]
   >(
     y: IRelation<P2, R2>
@@ -62,7 +62,7 @@ export const Relation = <P, R extends P>(records: R[]): IRelation<P, R> => {
 
   (that as IRelation<P, R>).innerJoin = y => ex => ey => {
     // Todo: figure out how to restrain the types to match in the signature
-    return that.join(y)(xn => yn => (xn[ex] as any) === (yn[ey] as any));
+    return that.join(y)(xn => yn => (xn[ex] as any) === yn[ey]);
   };
 
   (that as IRelation<P, R>).project = (...fields) =>
