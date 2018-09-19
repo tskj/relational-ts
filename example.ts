@@ -47,4 +47,4 @@ const result = employees
   .select(r => /Tarjei/.test(r.fullname))
   .project('fullname', 'group', 'birthDate');
 
-console.log(result.records);
+console.log(result.records());

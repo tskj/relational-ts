@@ -1,5 +1,5 @@
 export interface IRelation<P, R extends P> {
-  records: R[];
+  records: () => R[];
   (primaryKey: P): R | undefined;
   join: <P2, R2 extends P2>(
     y: IRelation<P2, R2>
@@ -38,19 +38,24 @@ export const Relation = <P, R extends P>(records: R[]): IRelation<P, R> => {
     }
   }) as IRelation<P, R>;
 
-  (that as IRelation<P, R>).records = records;
+  (that as IRelation<P, R>).records = () => records;
 
   (that as IRelation<P, R>).join = y => p => {
-    const x = that.records;
+    const x = that.records();
     switch (x.length) {
       case 0:
         return Relation([]);
       default:
         return Relation(
-          y.records
+          y
+            .records()
             .filter(y0 => p(x[0])(y0))
             .map(y0 => Object.assign({}, x[0], y0))
-            .concat(Relation(x.slice(1)).join(y)(p).records)
+            .concat(
+              Relation(x.slice(1))
+                .join(y)(p)
+                .records()
+            )
         );
     }
   };
@@ -62,17 +67,19 @@ export const Relation = <P, R extends P>(records: R[]): IRelation<P, R> => {
 
   (that as IRelation<P, R>).project = (...fields) =>
     Relation(
-      that.records.map(r =>
-        fields
-          .map(field => ({ [field]: r[field] }))
-          .reduce((x, y) => Object.assign({}, x, y), {})
-      )
+      that
+        .records()
+        .map(r =>
+          fields
+            .map(field => ({ [field]: r[field] }))
+            .reduce((x, y) => Object.assign({}, x, y), {})
+        )
     );
 
-  (that as IRelation<P, R>).select = p => Relation(that.records.filter(p));
+  (that as IRelation<P, R>).select = p => Relation(that.records().filter(p));
 
   (that as IRelation<P, R>).union = y =>
-    Relation(that.records.concat(y.records));
+    Relation(that.records().concat(y.records()));
 
   return that;
 };
