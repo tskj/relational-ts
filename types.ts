@@ -18,7 +18,11 @@ export interface IRelation<P, R extends P> {
     ...fields: (keyof R)[]
   ) => IRelation<{}, { [x: string]: R[keyof R] }>;
   select: (p: ((r: R) => boolean)) => IRelation<P, R>;
+
+  intersection: (y: IRelation<P, R>) => IRelation<P, R>;
+  difference: (y: IRelation<P, R>) => IRelation<P, R>;
   union: (y: IRelation<P, R>) => IRelation<P, R>;
 
   map: <R2 extends P>(f: (r: R) => R2) => IRelation<P, R2>;
+  insert: (r: R) => IRelation<P, R>;
 }

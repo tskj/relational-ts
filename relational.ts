@@ -3,21 +3,23 @@ export { IRelation } from './types';
 
 export const relation = <P, R extends P>(records: R[]): IRelation<P, R> => {
   const that = ((p: P) => {
-    const recs = records.filter(r => {
-      let eq = true;
-      for (const key in p) {
-        if (r[key] !== p[key]) {
-          eq = false;
-        }
-      }
-      return eq;
-    });
+    const recs = records.filter(that.equals(p));
     if (recs.length > 0) {
       return recs[recs.length - 1];
     } else {
       return undefined;
     }
   }) as IRelation<P, R>;
+
+  that['equals'] = r1 => r2 => {
+    let eq = true;
+    for (const key in r1) {
+      if (r1[key] !== r2[key]) {
+        eq = false;
+      }
+    }
+    return eq;
+  };
 
   (that as IRelation<P, R>).records = () => records;
 
@@ -61,8 +63,43 @@ export const relation = <P, R extends P>(records: R[]): IRelation<P, R> => {
 
   (that as IRelation<P, R>).select = p => relation(that.records().filter(p));
 
+  (that as IRelation<P, R>).insert = r => that.union([r]);
+
   (that as IRelation<P, R>).union = y =>
     relation(that.records().concat(y.records()));
+
+  (that as IRelation<P, R>).intersection = ys =>
+    relation(
+      that.records().filter(
+        r =>
+          ys
+            .records()
+            .map(y => r.equals(y))
+            .filter(t => (t ? true : false)).length > 0
+      )
+    );
+
+  (that as IRelation<P, R>).difference = ys =>
+    relation(
+      that.records().filter(
+        r =>
+          ys
+            .records()
+            .map(y => r.equals(y))
+            .filter(t => t).length > 0
+      )
+    );
+
+  (that as IRelation<P, R>).difference = ys =>
+    relation(
+      that.records().filter(
+        r =>
+          ys
+            .records()
+            .map(y => r.equals(y))
+            .filter(t => t).length === 0
+      )
+    );
 
   return that;
 };
