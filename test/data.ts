@@ -3,7 +3,7 @@ import { relation, IRelation } from '../lib/relational';
 type EmployeeRecord = { employeeId: number; fullname: string; birthDate: Date };
 type EmployeeRelation = IRelation<{ employeeId: number }, EmployeeRecord>;
 
-const employees: EmployeeRelation = relation([
+export const employees: EmployeeRelation = relation([
   {
     employeeId: 0,
     fullname: 'Tarjei S',
@@ -16,7 +16,7 @@ const employees: EmployeeRelation = relation([
   }
 ]);
 
-const groupRel: IRelation<
+export const groupRel: IRelation<
   { employeeId: number; groupId: number },
   { employeeId: number; groupId: number }
 > = relation([
@@ -26,7 +26,7 @@ const groupRel: IRelation<
   { employeeId: 1, groupId: 4 }
 ]);
 
-const groups: IRelation<
+export const groups: IRelation<
   { groupId: number },
   { groupId: number; group: string }
 > = relation([
