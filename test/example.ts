@@ -1,4 +1,4 @@
-import { relation, IRelation } from './relational';
+import { relation, IRelation } from '../lib/relational';
 
 type EmployeeRecord = { employeeId: number; fullname: string; birthDate: Date };
 type EmployeeRelation = IRelation<{ employeeId: number }, EmployeeRecord>;
