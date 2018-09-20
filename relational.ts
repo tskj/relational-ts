@@ -90,7 +90,7 @@ export const relation = <P, R extends P>(records: R[]): IRelation<P, R> => {
       )
     );
 
-  (that as IRelation<P, R>).difference = ys =>
+  (that as IRelation<P, R>).intersection = ys =>
     relation(
       that.records().filter(
         r =>
