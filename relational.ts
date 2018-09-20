@@ -1,26 +1,5 @@
-export interface IRelation<P, R extends P> {
-  records: () => R[];
-  (primaryKey: P): R | undefined;
-  join: <P2, R2 extends P2>(
-    y: IRelation<P2, R2>
-  ) => (p: (x: R) => (y: R2) => boolean) => IRelation<P & P2, R & R2>;
-  innerJoin: <
-    P2,
-    R2 extends P2,
-    V1 extends keyof R,
-    V2 extends keyof R2,
-    _V extends R[V1] & R2[V2] // Attempt to force typeof R[keyof R] === typeof R2[keyof R2]
-  >(
-    y: IRelation<P2, R2>
-  ) => (ex: V1) => (ey: V2) => IRelation<P & P2, R & R2>;
-  project: (
-    ...fields: (keyof R)[]
-  ) => IRelation<{}, { [x: string]: R[keyof R] }>;
-  select: (p: ((r: R) => boolean)) => IRelation<P, R>;
-  union: (y: IRelation<P, R>) => IRelation<P, R>;
-
-  map: <R2 extends P>(f: (r: R) => R2) => IRelation<P, R2>;
-}
+import { IRelation } from './types';
+export { IRelation } from './types';
 
 export const relation = <P, R extends P>(records: R[]): IRelation<P, R> => {
   const that = ((p: P) => {
