@@ -1,23 +1,38 @@
 import { relation, IRelation } from '../lib/relational';
-import { groupMemberships } from './group-memberships';
-import { groups, Groups } from './groups';
+import {
+  phoneNumbers,
+  PhoneNumbers,
+  groupMemberships,
+  groups,
+  Groups,
+} from './data';
 
-type Employee = { employeeId: number; fullname: string; birthDate: Date };
+export type Employee = {
+  employeeId: number;
+  fullname: string;
+  birthDate: Date;
+  mentorId: number;
+};
 
 export type Employees<E> = IRelation<{ employeeId: number }, Employee, E>;
 
-type EmployeeExtension = {
+export type EmployeeExtension = {
   groups: () => Groups<{}>;
   mentor: () => Employee & EmployeeExtension;
+  phoneNumbers: () => PhoneNumbers<{}>;
 };
 
-const employeeExtension = e => ({
+const employeeExtension = (e: Employee) => ({
   groups: () =>
     groupMemberships
       .innerJoin(groups)('groupId')('groupId')
       .select(g => g.employeeId === e.employeeId)
       .project('groupId', 'group') as Groups<{}>,
   mentor: () => employees({ employeeId: e.mentorId }),
+  phoneNumbers: () =>
+    employees
+      .innerJoin(phoneNumbers)('employeeId')('employeeId')
+      .select(p => p.employeeId === e.employeeId),
 });
 
 export const employees: Employees<EmployeeExtension> = relation([

@@ -1,3 +1,4 @@
-export { employees } from './employees';
+export { phoneNumbers, PhoneNumber, PhoneNumbers } from './phones';
+export { employees, Employee, Employees, EmployeeExtension } from './employees';
 export { groupMemberships } from './group-memberships';
-export { groups } from './groups';
+export { groups, Groups } from './groups';

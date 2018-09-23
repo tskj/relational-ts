@@ -1,5 +1,4 @@
-import { relation, IRelation } from '../lib/relational';
-import { employees, groupMemberships, groups } from './data';
+import { phoneNumbers, employees, groupMemberships, groups } from './data';
 
 let _result = employees
   .join(groupMemberships)(x => y => x.employeeId === y.employeeId)
@@ -28,5 +27,18 @@ console.log(
     .mentor()
     .mentor()
     .groups()
+    .records()
+);
+
+console.log(
+  employees({ employeeId: 0 })
+    .phoneNumbers()
+    .records()
+);
+
+console.log(
+  phoneNumbers({ phoneNumber: '45459615' })
+    .employee()
+    .phoneNumbers()
     .records()
 );

@@ -1,6 +1,5 @@
 import { relation, IRelation } from '../lib/relational';
-import { employees, Employees } from './employees';
-import { groupMemberships } from './group-memberships';
+import { employees, Employees, groupMemberships } from './data';
 
 type Group = {
   groupId: number;
