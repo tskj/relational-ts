@@ -51,6 +51,7 @@ export const relation = <P, R extends P, E>(
   };
 
   (that as IRelation<P, R, E>).map = f => relation(that.records().map(f));
+  (that as IRelation<P, R, E>).update = that.map;
 
   (that as IRelation<P, R, E>).project = (...fields) =>
     relation(
@@ -70,25 +71,14 @@ export const relation = <P, R extends P, E>(
   (that as IRelation<P, R, E>).union = y =>
     relation(that.records().concat(y.records()));
 
-  (that as IRelation<P, R, E>).intersection = ys =>
-    relation(
-      that.records().filter(
-        r =>
-          ys
-            .records()
-            .map(y => r.equals(y))
-            .filter(t => (t ? true : false)).length > 0
-      )
-    );
-
   (that as IRelation<P, R, E>).difference = ys =>
     relation(
       that.records().filter(
         r =>
           ys
             .records()
-            .map(y => r.equals(y))
-            .filter(t => t).length > 0
+            .map(y => that.equals(r)(y))
+            .filter(t => t).length === 0
       )
     );
 
@@ -98,8 +88,8 @@ export const relation = <P, R extends P, E>(
         r =>
           ys
             .records()
-            .map(y => r.equals(y))
-            .filter(t => t).length === 0
+            .map(y => that.equals(r)(y))
+            .filter(t => t).length > 0
       )
     );
 

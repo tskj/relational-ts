@@ -28,6 +28,7 @@ export interface IRelation<P, R extends P, E> {
   union: (y: IRelation<P, R, E>) => IRelation<P, R, E>;
 
   map: <R2 extends P>(f: (r: R) => R2) => IRelation<P, R2, {}>;
+  update: (f: (r: R) => R) => IRelation<P, R, E>;
   insert: (r: R) => IRelation<P, R, E>;
 
   extend: <T>(
