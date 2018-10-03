@@ -1,27 +1,17 @@
 import { relation, IRelation } from '../lib/relational';
-import { employees, Employee, EmployeeExtension } from './employees';
 
-export type RateHistory = {
+type RateHistory = {
   employeeId: number;
   startDate: Date;
   rate: number;
 };
 
-export type RateExtension = {
-  employees: () => Employee & EmployeeExtension;
-};
-
-export type RateHistories<E> = IRelation<
+type RateHistories = IRelation<
   { employeeId: number; startDate: Date },
-  RateHistory,
-  E
+  RateHistory
 >;
 
-const rateExtension = (r: RateHistory) => ({
-  employee: () => employees(r),
-});
-
-export const rateHistories: RateHistories<RateExtension> = relation([
+export const rateHistories: RateHistories = relation([
   {
     employeeId: 0,
     startDate: new Date('1995'),

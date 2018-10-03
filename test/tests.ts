@@ -6,11 +6,11 @@ import {
   groups,
 } from './data';
 
-import { relation } from '../lib/relational';
-
-let _result = employees
+const _result = employees
   .join(groupMemberships)(x => y => x.employeeId === y.employeeId)
   .join(groups)(x => y => x.groupId === y.groupId);
+
+console.log(_result);
 
 const result = employees
   .innerJoin(groupMemberships)('employeeId')('employeeId')
@@ -20,36 +20,10 @@ const result = employees
   .project('fullname', 'birthDate', 'group');
 
 console.log(result.records());
-console.log(
-  employees({ employeeId: 0 })
-    .groups()
-    .records()
-    .map(g =>
-      groups(g)
-        .members()
-        .records()
-    )
-);
-console.log(
-  employees({ employeeId: 2 })
-    .mentor()
-    .mentor()
-    .groups()
-    .records()
-);
 
-console.log(
-  employees({ employeeId: 0 })
-    .phoneNumbers()
-    .records()
-);
+console.log(employees({ employeeId: 0 }));
 
-console.log(
-  phoneNumbers({ phoneNumber: '45459615' })
-    .employee()
-    .phoneNumbers()
-    .records()
-);
+console.log(phoneNumbers({ phoneNumber: '45459615' }));
 
 console.log(
   employees

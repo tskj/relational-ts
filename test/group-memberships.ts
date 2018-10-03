@@ -1,7 +1,7 @@
 import { relation, IRelation } from '../lib/relational';
 
 type GroupMembership = { employeeId: number; groupId: number };
-export type GroupMemberships = IRelation<GroupMembership, GroupMembership, {}>;
+type GroupMemberships = IRelation<GroupMembership, GroupMembership>;
 
 export const groupMemberships: GroupMemberships = relation([
   { employeeId: 0, groupId: 1 },
