@@ -30,7 +30,7 @@ console.log(
     .project('employeeId')
     .difference(rateHistories.project('employeeId'))
     .map(r => ({
-      ...employees(r),
+      ...r,
       startDate: employees(r as any).birthDate,
       rate: 100,
     }))
