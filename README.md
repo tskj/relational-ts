@@ -133,3 +133,14 @@ method.
 ```
 employees.innerJoin(phoneNumbers)('id')('employeeId');
 ```
+
+If you only want their names and phone numbers, you can project only those columns:
+
+```
+employees.innerJoin(phoneNumbers)('id')('employeeId')
+    .project('fullname', 'phoneNumber');
+
+// { fullname: 'Tarjei S', phoneNumber: '555 678' }
+// { fullname: 'Tarjei S', phoneNumber: '45459615' }
+// { fullname: 'Henrik L', phoneNumber: '555 1234' }
+```
