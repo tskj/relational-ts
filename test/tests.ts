@@ -30,8 +30,7 @@ console.log(
     .project('employeeId')
     .difference(rateHistories.project('employeeId'))
     .map(r => ({
-      // difference API is not types correctly, which leads to 'as any'
-      ...employees(r as any),
+      ...employees(r),
       startDate: employees(r as any).birthDate,
       rate: 100,
     }))
