@@ -144,3 +144,82 @@ employees.innerJoin(phoneNumbers)('id')('employeeId')
 // { fullname: 'Tarjei S', phoneNumber: '45459615' }
 // { fullname: 'Henrik L', phoneNumber: '555 1234' }
 ```
+
+---
+
+Consider `mentorId` as a foreign key to `id` in the same relation. We can join
+on the same relation as follows:
+
+```
+employees.innerJoin(employees)('id')('mentorId')
+```
+
+The two records are combined using `Object.assign`, and as such columns with the
+same name survive from the right most relation.
+
+---
+
+As usual in relational databases, you would use a "junction relation" to model a
+many-to-many relationship. Consider the following group relationships:
+
+```
+const groups = relation([
+  { groupId: 0, group: 'Gruppe 1' },
+  { groupId: 1, group: 'Gruppe 2' },
+  { groupId: 2, group: 'Gruppe 3' },
+  { groupId: 3, group: 'Gruppe 4' },
+  { groupId: 4, group: 'Gruppe 5' },
+]);
+
+const groupMemberships = relation([
+  { employeeId: 0, groupId: 1 },
+  { employeeId: 0, groupId: 2 },
+  { employeeId: 2, groupId: 1 },
+  { employeeId: 1, groupId: 4 },
+]);
+```
+
+You would join them as follows to get all the employees with all their group
+memberships.
+
+```
+empoyees.innerJoin(groupMemberships)('id')('employeeId')
+    .innerJoin(groups)('groupId')('groupId');
+```
+
+## More Relational Algebra
+
+The fundamental set operations are `intersection`, `difference` and `union`.
+To get all employees which are _not_ part of a group, we can first select all
+employees which do have a group membership, and then remove them from the
+employees relation.
+
+```
+const employeesInAGroup =
+    employees.innerJoin(groupMemberships)('id')('employeeId');
+
+const employeesWithoutAGroup =
+    employees.difference(employeesInAGroup);
+```
+
+These basic building blocks can be used to implement pretty much anything,
+however some convenience methods are provided.
+
+`map` is a general way of transforming every record in a relation. `update` is
+a more restricted version of map, more akin to the SQL update command, which
+always produces a relation of the same type. For instance you could capitalize
+everyone's name like so:
+
+```
+employees.update(e => ({...e, fullname: e.fullname.toUpperCase()}));
+```
+
+Similarly, `insert` adds a new record to the relation.
+
+<!--
+## Types
+
+## API Doc
+
+## Roadmap
+-->
